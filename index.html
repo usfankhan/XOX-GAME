@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>XOX Game</title>
+  <style>
+    body {
+      background: linear-gradient(to bottom right, #c471ed, #f64f59);
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    h1 { color: white; }
+    #board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 5px;
+      justify-content: center;
+      margin: auto;
+    }
+    .cell {
+      width: 100px;
+      height: 100px;
+      font-size: 40px;
+      font-weight: bold;
+      border: 2px solid black;
+      cursor: pointer;
+      background-color: white;
+    }
+    .cell.winning {
+      background-color: lightgreen;
+    }
+    #status {
+      color: white;
+      margin: 20px;
+      font-size: 20px;
+    }
+    #scores {
+      margin: 10px;
+      color: white;
+    }
+    button {
+      padding: 10px 20px;
+      margin-top: 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>XOX Game</h1>
+
+<div id="status">Player 1's Turn (X)</div>
+<div id="scores">
+  Player 1 (X): <span id="p1">0</span> |
+  Player 2 (O): <span id="p2">0</span>
+</div>
+
+<div id="board"></div>
+
+<button onclick="resetGame()">Reset Game</button>
+
+<script>
+  const board = document.getElementById('board');
+  const status = document.getElementById('status');
+  const p1ScoreEl = document.getElementById('p1');
+  const p2ScoreEl = document.getElementById('p2');
+
+  let currentPlayer = 'X';
+  let cells = Array(9).fill('');
+  let gameActive = true;
+  let p1Score = 0, p2Score = 0;
+
+  function createBoard() {
+    board.innerHTML = '';
+    cells = Array(9).fill('');
+    gameActive = true;
+    currentPlayer = 'X';
+    status.textContent = `Player 1's Turn (X)`;
+
+    for (let i = 0; i < 9; i++) {
+      const cell = document.createElement('div');
+      cell.classList.add('cell');
+      cell.setAttribute('data-index', i);
+      cell.addEventListener('click', handleCellClick);
+      board.appendChild(cell);
+    }
+  }
+
+  function handleCellClick(e) {
+    const index = e.target.getAttribute('data-index');
+    if (!gameActive || cells[index] !== '') return;
+
+    cells[index] = currentPlayer;
+    e.target.textContent = currentPlayer;
+
+    const winningCombo = checkXOX();
+    if (winningCombo) {
+      winningCombo.forEach(i => board.children[i].classList.add('winning'));
+      gameActive = false;
+      if (currentPlayer === 'X') {
+        p1Score++;
+        p1ScoreEl.textContent = p1Score;
+        status.textContent = "Player 1 Wins with XOX!";
+      } else {
+        p2Score++;
+        p2ScoreEl.textContent = p2Score;
+        status.textContent = "Player 2 Wins with XOX!";
+      }
+      return;
+    }
+
+    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+    status.textContent = `Player ${currentPlayer === 'X' ? '1' : '2'}'s Turn (${currentPlayer})`;
+  }
+
+  function checkXOX() {
+    const lines = [
+      [0,1,2], [3,4,5], [6,7,8], // rows
+      [0,3,6], [1,4,7], [2,5,8], // cols
+      [0,4,8], [2,4,6]           // diagonals
+    ];
+    for (const [a,b,c] of lines) {
+      if (cells[a] === 'X' && cells[b] === 'O' && cells[c] === 'X') {
+        return [a,b,c];
+      }
+    }
+    return null;
+  }
+
+  function resetGame() {
+    createBoard();
+  }
+
+  createBoard();
+</script>
+
+</body>
+</html>
